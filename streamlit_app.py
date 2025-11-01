@@ -8,6 +8,11 @@ warnings.filterwarnings(
 )
 
 import streamlit as st
+st.set_page_config(
+    page_title="뉴서울CC 모바일 예약", # 원하는 앱 제목으로 변경
+    page_icon="⛳", # 이모지(Emoji)를 사용하거나 아래처럼 이미지 파일을 사용합니다.
+    layout="wide", # 앱의 기본 레이아웃을 넓게 설정 (선택 사항)
+)
 import datetime
 import threading
 import time
@@ -1121,4 +1126,5 @@ check_queue_and_rerun()
 # --- Rerun handling after button click ---
 if st.session_state.get('_button_clicked_status_change', False):
     st.session_state['_button_clicked_status_change'] = False
+
     st.rerun()
