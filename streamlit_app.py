@@ -6,12 +6,12 @@ warnings.filterwarnings(
     message="coroutine '.*' was never awaited",
     category=RuntimeWarning
 )
-
 import streamlit as st
+
 st.set_page_config(
-    page_title="뉴서울CC 모바일 예약", # 원하는 앱 제목으로 변경
-    page_icon="⛳", # 이모지(Emoji)를 사용하거나 아래처럼 이미지 파일을 사용합니다.
-    layout="wide", # 앱의 기본 레이아웃을 넓게 설정 (선택 사항)
+    page_title="뉴서울CC 모바일 예약",  # 원하는 앱 제목으로 변경
+    page_icon="⛳",  # 이모지(Emoji)를 사용하거나 아래처럼 이미지 파일을 사용합니다.
+    layout="wide",  # 앱의 기본 레이아웃을 넓게 설정 (선택 사항)
 )
 import datetime
 import threading
@@ -814,10 +814,14 @@ if 'run_date_input' not in st.session_state:
     st.session_state.run_date_input = get_default_date(0).strftime('%Y%m%d')  # Today
 if 'run_time_input' not in st.session_state:
     st.session_state.run_time_input = "10:00:00"  # Default 10:00:00 KST
+
+# ----------------- [수정된 부분] -----------------
 if 'res_start_input' not in st.session_state:
-    st.session_state.res_start_input = "07:00"  # Default 07:00
+    st.session_state.res_start_input = "07:30"  # Default 07:30 (수정됨)
 if 'res_end_input' not in st.session_state:
-    st.session_state.res_end_input = "09:00"  # Default 09:00
+    st.session_state.res_end_input = "09:00"  # Default 09:00 (유지됨)
+# -------------------------------------------------
+
 if 'course_input' not in st.session_state:
     st.session_state.course_input = "All"  # Default All courses
 if 'order_input' not in st.session_state:
@@ -842,7 +846,7 @@ def stop_booking():
 def run_booking():
     """Callback for the '예약 시작' button."""
     if st.session_state.is_running:
-        st.error("⚠️ 이미 예약 스레드가 실행 중입니다.")
+        st.error("⚠️ 이미 예약 스레 실행 중입니다.")
         return
 
     # 1. Validate Inputs First
@@ -1044,29 +1048,34 @@ with st.container(border=True):
     with col4:
         st.text_input("가동시작일 (YYYYMMDD)", key="run_date_input", help="API 실행 기준 날짜",
                       disabled=st.session_state.is_running)
-    with col5: st.text_input("가동시작시간 (HH:MM:SS)", key="run_time_input", help="API 실행 기준 시간 (KST)")
+    with col5:
+        st.text_input("가동시작시간 (HH:MM:SS)", key="run_time_input", help="API 실행 기준 시간 (KST)")
 
     # 1-3. Filters & Priority
     st.markdown("---")  # Separator
     st.markdown('<p class="section-header">⚙️ 티타임 필터 및 우선순위</p>', unsafe_allow_html=True)
     col6, col7, col8 = st.columns([2.5, 2.5, 1.5])
     with col6:
-        # 🚨 [UI 수정 요청사항] 시작시간: st.text_input -> st.selectbox 변경
-        start_time_options = [f"{h:02d}:00" for h in range(6, 16)]  # 06:00 ~ 15:00
-        # 기본값('07:00')이 옵션에 있는지 확인하고 index 설정
+
+        # ----------------- [수정된 부분] -----------------
+        # 🚨 [UI 수정 요청사항] 시작시간: 06:00 ~ 14:00까지 30분 단위 생성
+        start_time_options = [f"{h:02d}:{m:02d}" for h in range(6, 15) for m in (0, 30) if not (h == 14 and m == 30)]
+        # 기본값('07:30')이 옵션에 있는지 확인하고 index 설정
         try:
             default_start_time_index = start_time_options.index(st.session_state.res_start_input)
         except ValueError:
-            default_start_time_index = 1  # 기본값이 목록에 없으면 '07:00'을 기본으로
+            default_start_time_index = 3  # 기본값이 목록에 없으면 '07:30'을 기본으로 설정 (인덱스 3)
+        # -------------------------------------------------
+
         st.selectbox(
             "시작시간 (HH:MM)",
             options=start_time_options,
-            #index=default_start_time_index,
+            # index=default_start_time_index,
             key="res_start_input",
             disabled=st.session_state.is_running
         )
 
-        # 🚨 [UI 수정 요청사항] 종료시간: st.text_input -> st.selectbox 변경
+        # 🚨 [UI 수정 요청사항] 종료시간: st.text_input -> st.selectbox 변경 (기존 로직 유지)
         end_time_options = [f"{h:02d}:00" for h in range(7, 18)]  # 07:00 ~ 17:00
         # 기본값('09:00')이 옵션에 있는지 확인하고 index 설정
         try:
@@ -1076,7 +1085,7 @@ with st.container(border=True):
         st.selectbox(
             "종료시간 (HH:MM)",
             options=end_time_options,
-            #index=default_end_time_index,
+            # index=default_end_time_index,
             key="res_end_input",
             disabled=st.session_state.is_running
         )
@@ -1126,5 +1135,4 @@ check_queue_and_rerun()
 # --- Rerun handling after button click ---
 if st.session_state.get('_button_clicked_status_change', False):
     st.session_state['_button_clicked_status_change'] = False
-
     st.rerun()
