@@ -1076,7 +1076,8 @@ with st.container(border=True):
         )
 
         # 🚨 [UI 수정 요청사항] 종료시간: st.text_input -> st.selectbox 변경 (기존 로직 유지)
-        end_time_options = [f"{h:02d}:00" for h in range(7, 18)]  # 07:00 ~ 17:00
+        end_time_options = [f"{h:02d}:{m:02d}" for h in range(7, 17) for m in (0, 30) if not (h == 17 and m == 30)]
+#        end_time_options = [f"{h:02d}:00" for h in range(7, 18)]  # 07:00 ~ 17:00
         # 기본값('09:00')이 옵션에 있는지 확인하고 index 설정
         try:
             default_end_time_index = end_time_options.index(st.session_state.res_end_input)
